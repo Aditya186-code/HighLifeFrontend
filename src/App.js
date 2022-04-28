@@ -21,6 +21,7 @@ import AdminLogin from "./components/auth/AdminLogin";
 
 import SellerNav from "./components/seller/SellerNav";
 import Seller from "./components/admin/Seller";
+import Footer from "./components/footer/footer";
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
@@ -34,11 +35,13 @@ function App() {
               <AppTop />
               <AppNav />
               <Home product = {product} setProduct = {setProduct} isLogged={isLogged} setIsLogged={setIsLogged} />
+              <Footer />
           </Route>
           <Route path="/product/:id">
             <AppTop />
             <AppNav />
             <ProductDetails />
+            <Footer />
           </Route>
           <Route path="/login" exact>
             <AppTop />
