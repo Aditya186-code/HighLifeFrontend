@@ -1,11 +1,15 @@
 import React from 'react'
 import './cart.css'
-import {Add, Remove} from '@material-ui/icons'
+import {Add, NavigateNextTwoTone, Remove} from '@material-ui/icons'
 import { useSelector } from 'react-redux'
 import axoisInstance, { API_URL, headers } from "../../utils/axois";
 import { Tooltip, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
 import Shop from '@material-ui/icons/Shop';
+import {useHistory} from 'react-router-dom'
+import StripeCheckout from 'react-stripe-checkout'
+import {resetProduct} from '../../redux/cartRedux.js'
+import { useDispatch } from 'react-redux';
 const useStyles = makeStyles((theme) => ({
   root: {
     maxWidth: "auto",
@@ -61,8 +65,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 const Cart = ({setProduct}) => {
   const cart = useSelector((state) => state.cart);
-
-
+  const stripe_key = "pk_test_51KU68wLRge6iNIRmPd85Zoi2slvHCf1tyXo21D3lq9ndIDrMODXfnUeoZPB47nfa8y8LVdQXFBhW69XUrkUftByy00FH3tv7Cy"
+const history = useHistory();
   const buyProduct = (id) => {
     const obj = {
       id: id,
@@ -74,7 +78,6 @@ const Cart = ({setProduct}) => {
         setTimeout(() => {
           axoisInstance.get("/product/showall").then((res) => {
             setProduct(res.data);
-            alert("Product sold successfully");
           });
         }, 3000);
       })
@@ -84,6 +87,18 @@ const Cart = ({setProduct}) => {
   };
   const classes = useStyles();
   console.log(cart)
+
+  const dispatch = useDispatch();
+
+  const onToken = () => {
+    dispatch(resetProduct());
+    history.push('/')
+    cart.products.map(c => {
+      buyProduct(c._id)
+    })
+
+  }
+  
   return (
     <div className = "cartWrapper">
         <h1 className="cartTitle">YOUR BAG</h1>
@@ -94,7 +109,26 @@ const Cart = ({setProduct}) => {
             <span className="cartTopText">Shopping Bag(2)</span>
             <span className="cartTopText">Your Wishlist (0)</span>
         </div>
-        <button className = "topButton" style = {{color : 'white', backgroundColor : 'black'}}>CHECKOUT NOW</button>
+
+
+        <StripeCheckout
+              name="Buy Sell "
+              image="https://ml8mzf2qdhvl.i.optimole.com/QtrEnA8-7AY3OSJ1/w:474/h:355/q:mauto/rt:fill/g:sm/https://www.buildupnepal.com/wp-content/uploads/2020/06/cseb-machine.jpg"
+              billingAddress
+              shippingAddress
+              description={`Your total is Rs${cart.total}`}
+              amount={cart.total * 100}
+              stripeKey={stripe_key}
+              token = {onToken}
+            >
+        
+             <button className = "topButton" style = {{color : 'white', backgroundColor : 'black'}}>CHECKOUT NOW</button>
+              
+             </StripeCheckout>
+           
+       
+               
+        
         </div>
         <div className="cartBottom">
             <div className="cartInfo">
@@ -128,18 +162,23 @@ const Cart = ({setProduct}) => {
               : "Buy Product"
           }
         >
+           
+       
+          
           <Button
+          style = {{display : 'none'}}
             disabled={
               c.ProductSold === 1 ||
               localStorage.getItem("JWTUSER") === undefined ||
               !localStorage.getItem("JWTUSER")
             }
             className={classes.VisitListButton}
-            onClick={() => buyProduct(c._id)}
+            // onClick={() => buyProduct(c._id)}
           >
             <Shop />
             {c.ProductSold === 1 ? "Sold" : "Purchase"}
           </Button>
+          
         </Tooltip>
             </div>
 
